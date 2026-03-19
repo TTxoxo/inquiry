@@ -14,7 +14,7 @@ final class App
     {
         $this->bootstrapEnvironment();
         $this->prepareRuntimeDirectories();
-        date_default_timezone_set((string) env('APP_TIMEZONE', 'Asia/Shanghai'));
+        date_default_timezone_set((string) env('DEFAULT_TIMEZONE', env('APP_TIMEZONE', 'Asia/Shanghai')));
         $this->console = new Console($this);
         $this->http = new Http($this);
     }
