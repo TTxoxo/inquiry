@@ -1,0 +1,10 @@
+<?php
+$viewData['page_intro'] = '字段管理使用 form_fields 表，settings_json 为真实 JSON。';
+$viewData['list_endpoint'] = '/admin/fields/list';
+$viewData['save_endpoint'] = '/admin/fields/save';
+$viewData['delete_endpoint'] = '/admin/fields/delete';
+$viewData['detail_endpoint'] = '';
+$viewData['export_endpoint'] = '';
+$viewData['retry_endpoint'] = '';
+$viewData['form_fields'] = [['name' => 'id', 'label' => '记录 ID', 'type' => 'text', 'placeholder' => '记录 ID'], ['name' => 'form_id', 'label' => '表单 ID', 'type' => 'text', 'placeholder' => '表单 ID'], ['name' => 'name', 'label' => '字段名', 'type' => 'text', 'placeholder' => '字段名'], ['name' => 'label', 'label' => '显示名称', 'type' => 'text', 'placeholder' => '显示名称'], ['name' => 'type', 'label' => '类型', 'type' => 'text', 'placeholder' => '类型'], ['name' => 'is_required', 'label' => '必填', 'type' => 'text', 'placeholder' => '必填'], ['name' => 'sort', 'label' => '排序', 'type' => 'text', 'placeholder' => '排序'], ['name' => 'settings_json', 'label' => 'settings_json', 'type' => 'textarea', 'placeholder' => 'settings_json']];
+require root_path('app/admin/view/module-common.html');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use app\admin\service\AdminModuleRegistry;
 use app\admin\service\AuthSessionService;
 use app\common\controller\BaseController;
 use app\model\User;
@@ -30,6 +31,7 @@ final class PasswordController extends BaseController
             'content_template' => root_path('app/admin/view/password/index.html'),
             'user' => $user,
             'csrf_token' => $this->sessionService->csrfToken(),
+            'nav_items' => (new AdminModuleRegistry())->nav(),
         ];
         ob_start();
         require root_path('app/admin/view/layout/admin.html');

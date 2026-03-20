@@ -1,0 +1,10 @@
+<?php
+$viewData['page_intro'] = '垃圾关键词使用 spam_keywords 表。';
+$viewData['list_endpoint'] = '/admin/spam-keywords/list';
+$viewData['save_endpoint'] = '/admin/spam-keywords/save';
+$viewData['delete_endpoint'] = '/admin/spam-keywords/delete';
+$viewData['detail_endpoint'] = '';
+$viewData['export_endpoint'] = '';
+$viewData['retry_endpoint'] = '';
+$viewData['form_fields'] = [['name' => 'id', 'label' => '记录 ID', 'type' => 'text', 'placeholder' => '记录 ID'], ['name' => 'keyword', 'label' => '关键词', 'type' => 'text', 'placeholder' => '关键词'], ['name' => 'status', 'label' => '状态', 'type' => 'text', 'placeholder' => '状态']];
+require root_path('app/admin/view/module-common.html');
