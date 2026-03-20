@@ -118,12 +118,18 @@ CREATE TABLE IF NOT EXISTS `__PREFIX__email_send_logs` (
   `inquiry_id` bigint unsigned DEFAULT NULL,
   `to_email` varchar(120) NOT NULL,
   `subject` varchar(255) NOT NULL,
+  `body_html` mediumtext NOT NULL,
+  `body_text` text NOT NULL,
   `status` tinyint NOT NULL DEFAULT 0,
+  `send_status` tinyint NOT NULL DEFAULT 2,
+  `retry_count` tinyint NOT NULL DEFAULT 0,
+  `next_retry_at` datetime DEFAULT NULL,
   `error_message` varchar(500) NOT NULL DEFAULT '',
   `sent_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_email_send_logs_site_id` (`site_id`)
+  KEY `idx_email_send_logs_site_id` (`site_id`),
+  KEY `idx_email_send_logs_retry` (`send_status`,`next_retry_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `__PREFIX__operation_logs` (

@@ -62,6 +62,7 @@ $webRoutes = [
     ['GET', '/admin/smtp', SmtpController::class, 'index', $admin],
     ['POST', '/admin/smtp/list', SmtpController::class, 'list', $postAdmin],
     ['POST', '/admin/smtp/save', SmtpController::class, 'save', $postAdmin],
+    ['POST', '/admin/smtp/test', SmtpController::class, 'test', $postAdmin],
     ['POST', '/admin/smtp/delete', SmtpController::class, 'delete', $postAdmin],
     ['GET', '/admin/notify-emails', NotifyEmailsController::class, 'index', $admin],
     ['POST', '/admin/notify-emails/list', NotifyEmailsController::class, 'list', $postAdmin],

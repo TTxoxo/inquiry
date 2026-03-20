@@ -23,6 +23,16 @@ final class SmtpController extends AdminModuleController
 
         return $this->handleAction(fn (): array => ['item' => $this->crudService->saveSmtp($this->currentUser(), $input)]);
     }
+    public function test(array $input): \think\Response
+    {
+        $errors = (new \app\admin\validate\SmtpValidate())->checkTest($input);
+        if ($errors !== []) {
+            return $this->error(422, 'Validation failed', [], $errors);
+        }
+
+        return $this->handleAction(fn (): array => ['item' => $this->crudService->testSmtp($this->currentUser(), $input)]);
+    }
+
     public function delete(array $input): \think\Response
     {
         return $this->handleAction(fn (): array => ((function () use ($input): array {
@@ -31,3 +41,4 @@ final class SmtpController extends AdminModuleController
         })()));
     }
 }
+

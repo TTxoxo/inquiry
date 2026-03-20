@@ -56,3 +56,9 @@ project/
 composer install --no-dev --optimize-autoloader
 php think
 ```
+
+## 阶段 8 运维命令
+```bash
+php think mail:retry
+* * * * * /usr/bin/php /path/to/project/think mail:retry
+```
