@@ -8,7 +8,7 @@ class EmailSendLog extends BaseModel
 {
     public function fields(): array
     {
-        return ['id', 'site_id', 'inquiry_id', 'to_email', 'subject', 'status', 'error_message', 'sent_at', 'created_at'];
+        return ['id', 'site_id', 'inquiry_id', 'to_email', 'subject', 'body_html', 'body_text', 'status', 'send_status', 'retry_count', 'next_retry_at', 'error_message', 'sent_at', 'created_at'];
     }
 
     protected function tableName(): string

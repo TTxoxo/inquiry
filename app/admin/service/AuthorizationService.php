@@ -39,6 +39,7 @@ final class AuthorizationService
         '/admin/smtp' => ['super_admin', 'site_admin'],
         '/admin/smtp/list' => ['super_admin', 'site_admin'],
         '/admin/smtp/save' => ['super_admin', 'site_admin'],
+        '/admin/smtp/test' => ['super_admin', 'site_admin'],
         '/admin/smtp/delete' => ['super_admin', 'site_admin'],
         '/admin/notify-emails' => ['super_admin', 'site_admin'],
         '/admin/notify-emails/list' => ['super_admin', 'site_admin'],

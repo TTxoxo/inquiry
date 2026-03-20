@@ -18,6 +18,7 @@ use app\model\SpamKeyword;
 use app\model\User;
 use app\service\export\InquiryExportService;
 use app\service\form\EmbedCodeService;
+use app\service\mail\InquiryMailService;
 use app\service\mail\MailRetryService;
 use PDO;
 use RuntimeException;
@@ -40,6 +41,7 @@ final class AdminCrudService
         private readonly EmbedCodeService $embedCodeService = new EmbedCodeService(),
         private readonly InquiryExportService $exportService = new InquiryExportService(),
         private readonly MailRetryService $mailRetryService = new MailRetryService(),
+        private readonly InquiryMailService $inquiryMailService = new InquiryMailService(),
         private readonly AdminAccessService $accessService = new AdminAccessService(),
     ) {
     }
@@ -346,9 +348,14 @@ final class AdminCrudService
         }
         $rows = $this->exportService->exportCsvRows($siteId);
         $stream = fopen('php://temp', 'r+');
-        fputcsv($stream, ['id', 'site_id', 'form_id', 'source_url', 'ip', 'status', 'payload_json', 'created_at']);
+        $header = $rows === [] ? ['id', 'site_id', 'form_id', 'source_url', 'ip', 'user_agent', 'status', 'payload_json', 'created_at', 'updated_at'] : array_keys($rows[0]);
+        fputcsv($stream, $header);
         foreach ($rows as $row) {
-            fputcsv($stream, $row);
+            $line = [];
+            foreach ($header as $column) {
+                $line[] = $row[$column] ?? '';
+            }
+            fputcsv($stream, $line);
         }
         rewind($stream);
         $csv = stream_get_contents($stream) ?: '';
@@ -438,7 +445,7 @@ final class AdminCrudService
     {
         $rows = $this->listScopedTable($user, $this->emailLogModel->table(), 'site_id');
         foreach ($rows as &$row) {
-            $row['retry_allowed'] = (int) $row['status'] !== 1;
+            $row['retry_allowed'] = (int) ($row['send_status'] ?? 0) === 2 && (int) ($row['retry_count'] ?? 0) < 3 && !empty($row['next_retry_at']) && strtotime((string) $row['next_retry_at']) <= time();
         }
         return $rows;
     }
@@ -450,23 +457,39 @@ final class AdminCrudService
             throw new RuntimeException('Email log not found');
         }
         $this->accessService->enforceSiteAccess($user, (int) $row['site_id']);
-        $failed = $this->mailRetryService->failedBySiteId((int) $row['site_id'], 100);
-        $match = null;
-        foreach ($failed as $item) {
-            if ((int) $item['id'] === $id) {
-                $match = $item;
-                break;
+        return $this->mailRetryService->retryLog($id);
+    }
+
+
+    public function testSmtp(array $user, array $input): array
+    {
+        $siteId = (int) ($input['site_id'] ?? 0);
+        $this->accessService->enforceSiteAccess($user, $siteId);
+        $smtpConfig = [
+            'site_id' => $siteId,
+            'host' => trim((string) ($input['host'] ?? '')),
+            'port' => (int) ($input['port'] ?? 25),
+            'username' => trim((string) ($input['username'] ?? '')),
+            'password' => (string) ($input['password'] ?? ''),
+            'encryption' => trim((string) ($input['encryption'] ?? 'tls')),
+            'from_email' => trim((string) ($input['from_email'] ?? '')),
+            'from_name' => trim((string) ($input['from_name'] ?? '')),
+        ];
+
+        if ((int) ($input['id'] ?? 0) > 0) {
+            $saved = $this->smtpModel->findById((int) $input['id']);
+            if ($saved === null) {
+                throw new RuntimeException('SMTP config not found');
+            }
+            $this->accessService->enforceSiteAccess($user, (int) $saved['site_id']);
+            foreach ($smtpConfig as $key => $value) {
+                if (($value === '' || $value === 0) && array_key_exists($key, $saved)) {
+                    $smtpConfig[$key] = $saved[$key];
+                }
             }
         }
-        if ($match === null && (int) $row['status'] === 1) {
-            return $row + ['retry_result' => 'already_sent'];
-        }
-        $this->emailLogModel->updateById($id, [
-            'status' => 1,
-            'error_message' => '',
-            'sent_at' => date('Y-m-d H:i:s'),
-        ]);
-        return ($this->emailLogModel->findById($id) ?? []) + ['retry_result' => 'sent'];
+
+        return $this->inquiryMailService->sendSmtpTest($smtpConfig, trim((string) ($input['test_email'] ?? '')));
     }
 
     public function listTracking(array $user): array
