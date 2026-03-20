@@ -9,7 +9,7 @@ use app\common\middleware\OperationLogMiddleware;
 use app\common\middleware\RolePermissionMiddleware;
 use app\install\controller\InstallController;
 
-return [
+$webRoutes = [
     ['GET', '/install', InstallController::class, 'index', []],
     ['POST', '/install/check-env', InstallController::class, 'checkEnv', []],
     ['POST', '/install/test-db', InstallController::class, 'testDb', []],
@@ -21,3 +21,7 @@ return [
     ['POST', '/admin/password', PasswordController::class, 'update', [AdminAuthMiddleware::class, RolePermissionMiddleware::class, OperationLogMiddleware::class]],
     ['GET', '/admin/dashboard', AuthController::class, 'dashboard', [AdminAuthMiddleware::class, RolePermissionMiddleware::class]],
 ];
+
+$apiRoutes = file_exists(root_path('route/api.php')) ? require root_path('route/api.php') : [];
+
+return array_merge($webRoutes, is_array($apiRoutes) ? $apiRoutes : []);
