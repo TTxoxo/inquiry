@@ -12,7 +12,7 @@ final class InstallService
 {
     private string $lockFile;
 
-    public function __construct()
+    public function __construct(private readonly InstallDefaultsService $installDefaultsService = new InstallDefaultsService())
     {
         $this->lockFile = runtime_path('install.lock');
     }
@@ -68,6 +68,7 @@ final class InstallService
             $pdo->beginTransaction();
             $this->importSqlFile($pdo, root_path('install/sql/schema.sql'), (string) ($input['db_prefix'] ?? ''));
             $this->importSqlFile($pdo, root_path('install/sql/init_data.sql'), (string) ($input['db_prefix'] ?? ''));
+            $this->installDefaultsService->ensureDefaultTrackingConfig($pdo, (string) ($input['db_prefix'] ?? ''), 1);
             $this->createAdministrator($pdo, $input);
 
             $envWritten = @file_put_contents(root_path('.env'), $envContent);
