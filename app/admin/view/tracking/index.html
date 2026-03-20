@@ -1,0 +1,10 @@
+<?php
+$viewData['page_intro'] = 'Tracking 配置使用 form_tracking_configs 表。';
+$viewData['list_endpoint'] = '/admin/tracking/list';
+$viewData['save_endpoint'] = '/admin/tracking/save';
+$viewData['delete_endpoint'] = '/admin/tracking/delete';
+$viewData['detail_endpoint'] = '';
+$viewData['export_endpoint'] = '';
+$viewData['retry_endpoint'] = '';
+$viewData['form_fields'] = [['name' => 'id', 'label' => '记录 ID', 'type' => 'text', 'placeholder' => '记录 ID'], ['name' => 'form_id', 'label' => '表单 ID', 'type' => 'text', 'placeholder' => '表单 ID'], ['name' => 'tracking_type', 'label' => '类型', 'type' => 'text', 'placeholder' => '类型'], ['name' => 'config_json', 'label' => 'config_json', 'type' => 'textarea', 'placeholder' => 'config_json'], ['name' => 'status', 'label' => '状态', 'type' => 'text', 'placeholder' => '状态']];
+require root_path('app/admin/view/module-common.html');

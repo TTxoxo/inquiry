@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use app\admin\service\AdminCrudService;
+use app\admin\service\AdminModuleRegistry;
 use app\admin\service\AuthSessionService;
 use app\admin\service\LoginLogService;
 use app\common\controller\BaseController;
@@ -16,7 +18,8 @@ final class AuthController extends BaseController
     public function __construct(
         private readonly AuthSessionService $sessionService = new AuthSessionService(),
         private readonly LoginLogService $loginLogService = new LoginLogService(),
-        private readonly User $userModel = new User()
+        private readonly User $userModel = new User(),
+        private readonly AdminCrudService $crudService = new AdminCrudService(),
     ) {
     }
 
@@ -98,12 +101,27 @@ final class AuthController extends BaseController
             'content_template' => root_path('app/admin/view/auth/dashboard.html'),
             'user' => $user,
             'csrf_token' => $this->sessionService->csrfToken(),
+            'nav_items' => (new AdminModuleRegistry())->nav(),
         ];
         ob_start();
         require root_path('app/admin/view/layout/admin.html');
         $content = (string) ob_get_clean();
 
         return $this->view($content);
+    }
+
+    public function dashboardStats(array $input): \think\Response
+    {
+        $user = $this->sessionService->user();
+        if ($user === null) {
+            return $this->error(4010, 'Unauthenticated');
+        }
+
+        try {
+            return $this->success(['stats' => $this->crudService->dashboard($user)]);
+        } catch (Throwable $exception) {
+            return $this->mapException($exception, 'Dashboard load failed');
+        }
     }
 
     private function ip(): string
@@ -115,6 +133,9 @@ final class AuthController extends BaseController
     {
         if ($exception instanceof RuntimeException && $exception->getCode() === 5001) {
             return $this->error(5001, 'Database connection failed');
+        }
+        if ((int) $exception->getCode() === 4003) {
+            return $this->error(4003, '越权访问');
         }
 
         return $this->error(5000, $exception->getMessage() === '' ? $fallback : $exception->getMessage());
