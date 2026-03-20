@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace think;
 
-use app\install\controller\InstallController;
-
 final class Http
 {
     public function __construct(private readonly App $app)
@@ -14,25 +12,28 @@ final class Http
 
     public function run(): Response
     {
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
-        $path = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/';
-        $controller = new InstallController();
-        $input = $this->getInput();
+        $request = $this->createRequest();
+        $routes = require root_path('route/app.php');
 
-        if ($method === 'GET' && $path === '/install') {
-            return $controller->index();
-        }
+        foreach ($routes as $route) {
+            [$method, $path, $controllerClass, $action, $middlewares] = $route;
+            if ($request['method'] !== $method || $request['path'] !== $path) {
+                continue;
+            }
 
-        if ($method === 'POST' && $path === '/install/check-env') {
-            return $controller->checkEnv($input);
-        }
+            $controller = new $controllerClass();
+            $core = static fn (array $requestData): Response => $controller->{$action}($requestData['input']);
+            $pipeline = array_reduce(
+                array_reverse($middlewares),
+                static fn (callable $next, string $middlewareClass): callable => static function (array $requestData) use ($middlewareClass, $next): Response {
+                    $middleware = new $middlewareClass();
 
-        if ($method === 'POST' && $path === '/install/test-db') {
-            return $controller->testDb($input);
-        }
+                    return $middleware->handle($requestData, $next);
+                },
+                $core
+            );
 
-        if ($method === 'POST' && $path === '/install/execute') {
-            return $controller->execute($input);
+            return $pipeline($request);
         }
 
         return Response::html('Not Found', 404);
@@ -40,6 +41,19 @@ final class Http
 
     public function end(Response $response): void
     {
+    }
+
+    /**
+     * @return array{method:string,path:string,input:array<string,mixed>,ip:string}
+     */
+    private function createRequest(): array
+    {
+        return [
+            'method' => strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')),
+            'path' => parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH) ?: '/',
+            'input' => $this->getInput(),
+            'ip' => mb_substr((string) ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'), 0, 45),
+        ];
     }
 
     /**
