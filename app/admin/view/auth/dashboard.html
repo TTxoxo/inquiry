@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="card stat">
+        <h2>Welcome</h2>
+        <p class="muted">当前已进入最小后台控制台。</p>
+        <p>Role: <strong><?= htmlspecialchars((string) ($viewData['user']['role_type'] ?? ''), ENT_QUOTES, 'UTF-8') ?></strong></p>
+    </div>
+    <div class="card stat">
+        <h2>Session</h2>
+        <p class="muted">当前会话用户数据已写入 Session。</p>
+        <p>User ID: <strong><?= (int) ($viewData['user']['user_id'] ?? 0) ?></strong></p>
+    </div>
+</div>
+<div class="card" style="margin-top: 24px;">
+    <h2>Stage 3 Scope</h2>
+    <p class="muted">本页仅提供认证、权限与密码修改入口，不包含后台 CRUD、公开 API、嵌入脚本。</p>
+</div>

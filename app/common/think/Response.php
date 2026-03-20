@@ -8,11 +8,13 @@ final class Response
 {
     /**
      * @param array<string, mixed>|string $content
+     * @param array<string, string> $headers
      */
     public function __construct(
         private readonly array|string $content,
         private readonly int $statusCode = 200,
-        private readonly string $contentType = 'text/html; charset=utf-8'
+        private readonly string $contentType = 'text/html; charset=utf-8',
+        private readonly array $headers = []
     ) {
     }
 
@@ -29,11 +31,19 @@ final class Response
         return new self($content, $statusCode);
     }
 
+    public static function redirect(string $location, int $statusCode = 302): self
+    {
+        return new self('', $statusCode, 'text/html; charset=utf-8', ['Location' => $location]);
+    }
+
     public function send(): void
     {
         if (PHP_SAPI !== 'cli' && !headers_sent()) {
             http_response_code($this->statusCode);
             header('Content-Type: ' . $this->contentType);
+            foreach ($this->headers as $name => $value) {
+                header($name . ': ' . $value, true);
+            }
         }
 
         echo is_array($this->content)
